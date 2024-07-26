@@ -1,5 +1,6 @@
 ﻿using AppDating.API.Data;
 using AppDating.API.Model.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,8 @@ namespace DattingApp.API.Controllers
             return Ok(users);
         }
 
-        [HttpGet("{id:Gfuid}")]
+        [Authorize]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<AppUser>> GetAppUser(int id)
         {
             var user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Id == id);
