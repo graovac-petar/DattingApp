@@ -1,4 +1,5 @@
 using AppDating.API.Extensions;
+using AppDating.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().
     WithOrigins("http://localhost:4200", "https://localhost:4200"));
 
