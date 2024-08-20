@@ -1,5 +1,6 @@
 ﻿using AppDating.API.Data;
 using AppDating.API.Interfaces;
+using AppDating.API.Mappers;
 using AppDating.API.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,8 @@ namespace AppDating.API.Extensions
             services.AddSwaggerGen();
             services.AddCors();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
             return services;
         }

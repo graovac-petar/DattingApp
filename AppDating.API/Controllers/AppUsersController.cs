@@ -1,34 +1,39 @@
-﻿using AppDating.API.Data;
-using AppDating.API.Model.Domain;
+﻿using AppDating.API.DTO;
+using AppDating.API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DattingApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AppUsersController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IUserRepository userRepository;
+        private readonly IMapper mapper;
 
-        public AppUsersController(DataContext context)
+        public AppUsersController(IUserRepository userRepository)
         {
-            _context = context;
+            this.userRepository = userRepository;
+            this.mapper = mapper;
         }
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AppUser>>> GetAllAppUsers()
+        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllAppUsers()
         {
-            var users = await _context.AppUsers.ToListAsync();
+            var users = await userRepository.GetMembersAsync();
+
 
             return Ok(users);
         }
 
-        [Authorize]
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<AppUser>> GetAppUser(int id)
+        [HttpGet("{username}")]
+        public async Task<ActionResult<MemberDTO>> GetAppUser(string username)
         {
-            var user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Id == id);
+            var user = await userRepository.GetMemberAsync(username);
+
             if (user == null)
                 return NotFound();
 

@@ -1,7 +1,6 @@
 ﻿using AppDating.API.Data;
 using AppDating.API.DTO;
 using AppDating.API.Interfaces;
-using AppDating.API.Model.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -28,29 +27,30 @@ namespace DattingApp.API.Controllers
             if (await UserExists(registerDTO.Username))
                 return BadRequest("Username already exists");
 
-            using var hmac = new HMACSHA512();
+            return Ok();
+            //using var hmac = new HMACSHA512();
 
-            var user = new AppUser
-            {
-                Username = registerDTO.Username,
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password)),
-                PasswordSalt = hmac.Key
-            };
+            //var user = new AppUser
+            //{
+            //    Username = registerDTO.Username,
+            //    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password)),
+            //    PasswordSalt = hmac.Key
+            //};
 
-            context.Add(user);
-            await context.SaveChangesAsync();
+            //context.Add(user);
+            //await context.SaveChangesAsync();
 
-            return new AppUserDTO
-            {
-                Username = user.Username,
-                Token = tokenService.CreateToken(user)
-            };
+            //return new AppUserDTO
+            //{
+            //    Username = user.Username,
+            //    Token = tokenService.CreateToken(user)
+            //};
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<AppUserDTO>> Login(LoginDTO loginDTO)
         {
-            var user = await context.AppUsers.FirstOrDefaultAsync(x => x.Username.ToLower() == loginDTO.Username.ToLower());
+            var user = await context.AppUsers.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.Username.ToLower());
 
             if (user == null) return Unauthorized("Invalid username");
 
@@ -64,7 +64,7 @@ namespace DattingApp.API.Controllers
 
             return new AppUserDTO
             {
-                Username = user.Username,
+                Username = user.UserName,
                 Token = tokenService.CreateToken(user)
             };
 
@@ -73,7 +73,7 @@ namespace DattingApp.API.Controllers
 
         private async Task<bool> UserExists(string username)
         {
-            return await context.AppUsers.AnyAsync(x => x.Username.ToLower() == username.ToLower());
+            return await context.AppUsers.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
         }
 
 
