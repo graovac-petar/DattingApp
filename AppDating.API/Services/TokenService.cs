@@ -24,7 +24,7 @@ namespace AppDating.API.Services
 
             var claims = new List<Claim>
             {
-                new (ClaimTypes.NameIdentifier,user.UserName),
+                new (ClaimTypes.NameIdentifier, user.UserName),
 
             };
 

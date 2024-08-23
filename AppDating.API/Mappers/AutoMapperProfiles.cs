@@ -15,6 +15,7 @@ namespace AppDating.API.Mappers
                 o => o.MapFrom(s => s.Photos.FirstOrDefault(x => x.IsMain)!.Url))
                 .ReverseMap();
             CreateMap<Photo, PhotoDTO>().ReverseMap();
+            CreateMap<MemberUpdateDTO, AppUser>().ReverseMap();
         }
     }
 }
