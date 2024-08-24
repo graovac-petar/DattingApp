@@ -3,7 +3,7 @@ using AppDating.API.Extensions;
 using AppDating.API.Model.Domain;
 using AutoMapper;
 
-namespace AppDating.API.Mappers
+namespace AppDating.API.Helpers
 {
     public class AutoMapperProfiles : Profile
     {

@@ -13,11 +13,7 @@ builder.Services.AddIdentityServices(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
 app.UseCors(policy =>
     policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
           .AllowAnyHeader()

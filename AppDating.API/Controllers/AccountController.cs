@@ -50,7 +50,7 @@ namespace DattingApp.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AppUserDTO>> Login(LoginDTO loginDTO)
         {
-            var user = await context.AppUsers.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.Username.ToLower());
+            var user = await context.AppUsers.Include(p => p.Photos).FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.Username.ToLower());
 
             if (user == null) return Unauthorized("Invalid username");
 
@@ -65,7 +65,8 @@ namespace DattingApp.API.Controllers
             return new AppUserDTO
             {
                 Username = user.UserName,
-                Token = tokenService.CreateToken(user)
+                Token = tokenService.CreateToken(user),
+                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
             };
 
         }
