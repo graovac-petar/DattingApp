@@ -1,6 +1,8 @@
 ﻿using AppDating.API.Data;
 using AppDating.API.DTO;
 using AppDating.API.Interfaces;
+using AppDating.API.Model.Domain;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -14,11 +16,13 @@ namespace DattingApp.API.Controllers
     {
         private readonly DataContext context;
         private readonly ITokenService tokenService;
+        private readonly IMapper mapper;
 
-        public AccountController(DataContext context, ITokenService tokenService)
+        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
         {
             this.context = context;
             this.tokenService = tokenService;
+            this.mapper = mapper;
         }
 
         [HttpPost("register")]
@@ -27,24 +31,24 @@ namespace DattingApp.API.Controllers
             if (await UserExists(registerDTO.Username))
                 return BadRequest("Username already exists");
 
-            return Ok();
-            //using var hmac = new HMACSHA512();
 
-            //var user = new AppUser
-            //{
-            //    Username = registerDTO.Username,
-            //    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password)),
-            //    PasswordSalt = hmac.Key
-            //};
+            using var hmac = new HMACSHA512();
 
-            //context.Add(user);
-            //await context.SaveChangesAsync();
+            var user = mapper.Map<AppUser>(registerDTO);
 
-            //return new AppUserDTO
-            //{
-            //    Username = user.Username,
-            //    Token = tokenService.CreateToken(user)
-            //};
+            user.UserName = registerDTO.Username;
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password));
+            user.PasswordSalt = hmac.Key;
+
+            context.Add(user);
+            await context.SaveChangesAsync();
+
+            return new AppUserDTO
+            {
+                Username = user.UserName,
+                Token = tokenService.CreateToken(user),
+                knownAs = user.KnownAs
+            };
         }
 
         [HttpPost("login")]
@@ -65,6 +69,7 @@ namespace DattingApp.API.Controllers
             return new AppUserDTO
             {
                 Username = user.UserName,
+                knownAs = user.KnownAs,
                 Token = tokenService.CreateToken(user),
                 PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
             };

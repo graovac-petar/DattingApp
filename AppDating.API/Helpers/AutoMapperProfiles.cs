@@ -16,6 +16,8 @@ namespace AppDating.API.Helpers
                 .ReverseMap();
             CreateMap<Photo, PhotoDTO>().ReverseMap();
             CreateMap<MemberUpdateDTO, AppUser>().ReverseMap();
+            CreateMap<RegisterDTO, AppUser>().ReverseMap();
+            CreateMap<string, DateOnly>().ConvertUsing(s => DateOnly.Parse(s));
         }
     }
 }
