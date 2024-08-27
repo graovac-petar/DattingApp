@@ -1,4 +1,5 @@
 ﻿using AppDating.API.DTO;
+using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
 using AutoMapper;
@@ -27,16 +28,34 @@ namespace AppDating.API.Data
 
         }
 
-        public async Task<IEnumerable<MemberDTO?>> GetMembersAsync()
+        public async Task<PagedList<MemberDTO?>> GetMembersAsync(UserParams userParams)
         {
-            return await context.AppUsers
-                .ProjectTo<MemberDTO>(mapper.ConfigurationProvider)
-                .ToListAsync();
+            var query = context.AppUsers.AsQueryable();
+
+            query = query.Where(x => x.UserName != userParams.CurrentUsername);
+
+            if (userParams.Gender != null)
+            {
+                query = query.Where(x => x.Gender == userParams.Gender);
+            }
+
+            var minDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
+            var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
+
+            query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
+
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(x => x.Created),
+                _ => query.OrderByDescending(x => x.LastActive)
+            };
+
+            return await PagedList<MemberDTO?>.CreateAsync(query.ProjectTo<MemberDTO>(mapper.ConfigurationProvider), userParams.PageNumber, userParams.PageSize);
         }
 
         public async Task<AppUser?> GetUserByIdAsync(int id)
         {
-            return await context.AppUsers.FirstOrDefaultAsync(x => x.Id == id);
+            return await context.AppUsers.FindAsync(id);
         }
 
         public async Task<AppUser?> GetUserByUsernameAsync(string username)

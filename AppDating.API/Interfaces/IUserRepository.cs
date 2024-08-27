@@ -1,4 +1,5 @@
 ﻿using AppDating.API.DTO;
+using AppDating.API.Helpers;
 using AppDating.API.Model.Domain;
 
 namespace AppDating.API.Interfaces
@@ -9,7 +10,7 @@ namespace AppDating.API.Interfaces
         Task<IEnumerable<AppUser>> GetUsersAsync();
         Task<AppUser?> GetUserByIdAsync(int id);
         Task<AppUser?> GetUserByUsernameAsync(string username);
-        Task<IEnumerable<MemberDTO?>> GetMembersAsync();
+        Task<PagedList<MemberDTO?>> GetMembersAsync(UserParams userParams);
         Task<MemberDTO?> GetMemberAsync(string username);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AppDating.API.DTO;
 using AppDating.API.Extensions;
+using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DattingApp.API.Controllers
 {
+    [ServiceFilter(typeof(LogUserActivity))]
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -25,9 +27,12 @@ namespace DattingApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllAppUsers()
+        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllAppUsers([FromQuery] UserParams userParams)
         {
-            var users = await userRepository.GetMembersAsync();
+            userParams.CurrentUsername = User.GetUsername();
+            var users = await userRepository.GetMembersAsync(userParams);
+
+            Response.AddPaginationHeader(users);
 
 
             return Ok(users);

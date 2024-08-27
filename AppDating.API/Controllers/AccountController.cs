@@ -1,5 +1,6 @@
 ﻿using AppDating.API.Data;
 using AppDating.API.DTO;
+using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
 using AutoMapper;
@@ -10,6 +11,7 @@ using System.Text;
 
 namespace DattingApp.API.Controllers
 {
+    [ServiceFilter(typeof(LogUserActivity))]
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -47,7 +49,8 @@ namespace DattingApp.API.Controllers
             {
                 Username = user.UserName,
                 Token = tokenService.CreateToken(user),
-                knownAs = user.KnownAs
+                knownAs = user.KnownAs,
+                Gender = user.Gender,
             };
         }
 
@@ -71,7 +74,8 @@ namespace DattingApp.API.Controllers
                 Username = user.UserName,
                 knownAs = user.KnownAs,
                 Token = tokenService.CreateToken(user),
-                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
+                PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
+                Gender = user.Gender,
             };
 
         }
