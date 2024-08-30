@@ -3,12 +3,14 @@ using AppDating.API.Extensions;
 using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppDating.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class LikesController : ControllerBase
     {
         private readonly ILikesRepository repository;
