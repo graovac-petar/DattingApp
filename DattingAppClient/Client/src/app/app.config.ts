@@ -10,6 +10,7 @@ import { GalleryModule } from 'ng-gallery';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { loadingInterceptor } from './_interceptors/loading.interceptor';
 import { TimeagoModule } from 'ngx-timeago';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([errorInterceptor,jwtInterceptor,loadingInterceptor])),
     provideAnimations(),
-    importProvidersFrom(GalleryModule,NgxSpinnerModule, TimeagoModule.forRoot()),
+    importProvidersFrom(GalleryModule,NgxSpinnerModule, TimeagoModule.forRoot(), ModalModule.forRoot()),
     provideToastr({
       positionClass: 'toast-bottom-right'
     })

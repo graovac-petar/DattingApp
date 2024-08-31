@@ -1,5 +1,6 @@
 ﻿using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,12 +11,14 @@ namespace AppDating.API.Services
     public class TokenService : ITokenService
     {
         private readonly IConfiguration config;
+        private readonly UserManager<AppUser> userManager;
 
-        public TokenService(IConfiguration config)
+        public TokenService(IConfiguration config, UserManager<AppUser> userManager)
         {
             this.config = config;
+            this.userManager = userManager;
         }
-        public string CreateToken(AppUser user)
+        public async Task<string> CreateToken(AppUser user)
         {
             var tokenKey = config["TokenKey"] ?? throw new Exception("Cannot access tokenKey from appsettings.json");
             if (tokenKey.Length < 64)
@@ -27,6 +30,10 @@ namespace AppDating.API.Services
                 new (ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new (ClaimTypes.Name, user.UserName)
             };
+
+            var roles = await userManager.GetRolesAsync(user);
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

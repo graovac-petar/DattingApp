@@ -4,10 +4,9 @@ using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Model.Domain;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DattingApp.API.Controllers
 {
@@ -19,12 +18,14 @@ namespace DattingApp.API.Controllers
         private readonly DataContext context;
         private readonly ITokenService tokenService;
         private readonly IMapper mapper;
+        private readonly UserManager<AppUser> userManager;
 
-        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper)
+        public AccountController(DataContext context, ITokenService tokenService, IMapper mapper, UserManager<AppUser> userManager)
         {
             this.context = context;
             this.tokenService = tokenService;
             this.mapper = mapper;
+            this.userManager = userManager;
         }
 
         [HttpPost("register")]
@@ -33,22 +34,18 @@ namespace DattingApp.API.Controllers
             if (await UserExists(registerDTO.Username))
                 return BadRequest("Username already exists");
 
-
-            using var hmac = new HMACSHA512();
-
             var user = mapper.Map<AppUser>(registerDTO);
 
             user.UserName = registerDTO.Username;
-            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password));
-            user.PasswordSalt = hmac.Key;
 
-            context.Add(user);
-            await context.SaveChangesAsync();
+            var result = await userManager.CreateAsync(user, registerDTO.Password);
+
+            if (!result.Succeeded) return BadRequest(result.Errors);
 
             return new AppUserDTO
             {
                 Username = user.UserName,
-                Token = tokenService.CreateToken(user),
+                Token = await tokenService.CreateToken(user),
                 knownAs = user.KnownAs,
                 Gender = user.Gender,
             };
@@ -57,23 +54,19 @@ namespace DattingApp.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AppUserDTO>> Login(LoginDTO loginDTO)
         {
-            var user = await context.AppUsers.Include(p => p.Photos).FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.Username.ToLower());
+            var user = await userManager.Users.Include(p => p.Photos).FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.Username.ToUpper());
 
             if (user == null) return Unauthorized("Invalid username");
 
-            using var hmac = new HMACSHA512(user.PasswordSalt);
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDTO.Password));
+            var result = await userManager.CheckPasswordAsync(user, loginDTO.Password);
 
-            for (int i = 0; i < computedHash.Length; i++)
-            {
-                if (computedHash[i] != user.PasswordHash[i]) return Unauthorized("Password not good");
-            }
+            if (!result) return Unauthorized("Invalid password");
 
             return new AppUserDTO
             {
                 Username = user.UserName,
                 knownAs = user.KnownAs,
-                Token = tokenService.CreateToken(user),
+                Token = await tokenService.CreateToken(user),
                 PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
                 Gender = user.Gender,
             };
@@ -83,7 +76,7 @@ namespace DattingApp.API.Controllers
 
         private async Task<bool> UserExists(string username)
         {
-            return await context.AppUsers.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
+            return await userManager.Users.AnyAsync(x => x.NormalizedUserName == username.ToUpper());
         }
 
 

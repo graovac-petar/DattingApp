@@ -1,12 +1,13 @@
 ﻿using AppDating.API.Model.Domain;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppDating.API.Data
 {
-    public class DataContext : DbContext
+    public class DataContext(DbContextOptions options) : IdentityDbContext<AppUser, AppRole, int,
+        IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>(options)
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options) { }
-
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<UserLike> UserLikes { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -14,6 +15,18 @@ namespace AppDating.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<AppUser>()
+                .HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+
+            modelBuilder.Entity<AppRole>()
+                .HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.Role)
+                .HasForeignKey(ur => ur.RoleId)
+                .IsRequired();
 
             modelBuilder.Entity<UserLike>()
                 .HasKey(k => new { k.SourceUserId, k.TargetUserId });
