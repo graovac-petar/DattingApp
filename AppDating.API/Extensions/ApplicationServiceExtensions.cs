@@ -2,6 +2,7 @@
 using AppDating.API.Helpers;
 using AppDating.API.Interfaces;
 using AppDating.API.Services;
+using AppDating.API.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppDating.API.Extensions
@@ -33,6 +34,8 @@ namespace AppDating.API.Extensions
             services.AddScoped<LogUserActivity>();
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
             services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+            services.AddSignalR();
+            services.AddSingleton<PresenceTracker>();
 
             return services;
         }

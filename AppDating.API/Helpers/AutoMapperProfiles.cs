@@ -24,6 +24,8 @@ namespace AppDating.API.Helpers
                 o => o.MapFrom(s => s.Recipient.Photos.FirstOrDefault(x => x.IsMain)!.Url))
                 .ReverseMap();
             CreateMap<string, DateOnly>().ConvertUsing(s => DateOnly.Parse(s));
+            CreateMap<DateTime, DateTime>().ConvertUsing(s => DateTime.SpecifyKind(s, DateTimeKind.Utc));
+            CreateMap<DateTime?, DateTime?>().ConvertUsing(d => d.HasValue ? DateTime.SpecifyKind(d.Value, DateTimeKind.Utc) : null);
         }
     }
 }
