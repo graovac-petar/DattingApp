@@ -2,6 +2,7 @@ using AppDating.API.Data;
 using AppDating.API.Extensions;
 using AppDating.API.Middleware;
 using AppDating.API.Model.Domain;
+using AppDating.API.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,8 +19,9 @@ var app = builder.Build();
 
 app.UseCors(policy =>
     policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
-          .AllowAnyHeader()
-          .AllowAnyMethod()
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
 );
 
 app.UseMiddleware<ExceptionMiddleware>();
@@ -32,6 +34,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<PresenceHub>("hubs/presence");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
