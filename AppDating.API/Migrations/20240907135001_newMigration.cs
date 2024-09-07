@@ -5,7 +5,7 @@
 namespace AppDating.API.Migrations
 {
     /// <inheritdoc />
-    public partial class FixedConnectionType : Migration
+    public partial class newMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

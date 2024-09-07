@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppDating.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240904184109_FixedConnectionType")]
-    partial class FixedConnectionType
+    [Migration("20240907135001_newMigration")]
+    partial class newMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
