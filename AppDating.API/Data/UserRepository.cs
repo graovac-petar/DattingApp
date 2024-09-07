@@ -69,10 +69,5 @@ namespace AppDating.API.Data
         {
             return await context.AppUsers.Include(x => x.Photos).ToListAsync();
         }
-
-        public async Task<bool> SaveAllAsync()
-        {
-            return await context.SaveChangesAsync() > 0;
-        }
     }
 }

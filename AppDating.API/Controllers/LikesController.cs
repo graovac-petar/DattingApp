@@ -13,11 +13,11 @@ namespace AppDating.API.Controllers
     [Authorize]
     public class LikesController : ControllerBase
     {
-        private readonly ILikesRepository repository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public LikesController(ILikesRepository repository)
+        public LikesController(IUnitOfWork unitOfWork)
         {
-            this.repository = repository;
+            this.unitOfWork = unitOfWork;
         }
 
         [HttpPost("{targetUserId:int}")]
@@ -30,7 +30,7 @@ namespace AppDating.API.Controllers
                 return BadRequest("You cannot like yourself");
             }
 
-            var existingLike = await repository.GetUserLike(sourceUserId, targetUserId);
+            var existingLike = await unitOfWork.LikesRepository.GetUserLike(sourceUserId, targetUserId);
             if (existingLike == null)
             {
                 var like = new UserLike
@@ -38,14 +38,14 @@ namespace AppDating.API.Controllers
                     SourceUserId = sourceUserId,
                     TargetUserId = targetUserId
                 };
-                repository.AddLike(like);
+                unitOfWork.LikesRepository.AddLike(like);
             }
             else
             {
-                repository.DeleteUserLike(existingLike);
+                unitOfWork.LikesRepository.DeleteUserLike(existingLike);
             }
 
-            if (await repository.SaveChanges())
+            if (await unitOfWork.Complete())
             {
                 return Ok();
             }
@@ -57,14 +57,14 @@ namespace AppDating.API.Controllers
         [HttpGet("list")]
         public async Task<ActionResult<IEnumerable<int>>> GetCurrentUserLikeIds()
         {
-            return Ok(await repository.GetCurrentUserLikeIds(User.GetUserId()));
+            return Ok(await unitOfWork.LikesRepository.GetCurrentUserLikeIds(User.GetUserId()));
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemberDTO>>> GetUserLikes([FromQuery] LikesParams likesParams)
         {
             likesParams.UserId = User.GetUserId();
-            var users = await repository.GetUserLikes(likesParams);
+            var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
 
             Response.AddPaginationHeader(users);
             return Ok(users);

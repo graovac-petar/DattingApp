@@ -14,14 +14,12 @@ namespace AppDating.API.Controllers
     [Authorize]
     public class MessagesController : ControllerBase
     {
-        private readonly IMessageRepository messageRepository;
-        private readonly IUserRepository userRepository;
+        private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
 
-        public MessagesController(IMessageRepository messageRepository, IUserRepository userRepository, IMapper mapper)
+        public MessagesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            this.messageRepository = messageRepository;
-            this.userRepository = userRepository;
+            this.unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
 
@@ -33,10 +31,11 @@ namespace AppDating.API.Controllers
             if (username == createMessageDTO.RecipientUsername.ToLower())
                 return BadRequest("You cannot send messages to yourself");
 
-            var sender = await userRepository.GetUserByUsernameAsync(username);
-            var recipient = await userRepository.GetUserByUsernameAsync(createMessageDTO.RecipientUsername);
+            var sender = await unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            var recipient = await unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDTO.RecipientUsername);
 
-            if (recipient == null || sender == null) return BadRequest();
+            if (recipient == null || sender == null ||
+                string.IsNullOrEmpty(sender.UserName) || string.IsNullOrEmpty(recipient.UserName)) return BadRequest();
 
             var message = new Message
             {
@@ -47,9 +46,9 @@ namespace AppDating.API.Controllers
                 Content = createMessageDTO.Content
             };
 
-            messageRepository.AddMessage(message);
+            unitOfWork.MessageRepository.AddMessage(message);
 
-            if (await messageRepository.SaveAllAsync()) return Ok(mapper.Map<MessageDTO>(message));
+            if (await unitOfWork.Complete()) return Ok(mapper.Map<MessageDTO>(message));
 
             return BadRequest("Failed to save message");
         }
@@ -59,7 +58,7 @@ namespace AppDating.API.Controllers
         {
             messageParams.Username = User.GetUsername();
 
-            var messages = await messageRepository.GetMessagesForUser(messageParams);
+            var messages = await unitOfWork.MessageRepository.GetMessagesForUser(messageParams);
 
             Response.AddPaginationHeader(messages);
 
@@ -71,7 +70,7 @@ namespace AppDating.API.Controllers
         {
             var currentUsername = User.GetUsername();
 
-            var messages = await messageRepository.GetMessageThread(currentUsername, username);
+            var messages = await unitOfWork.MessageRepository.GetMessageThread(currentUsername, username);
 
             return Ok(messages);
         }
@@ -81,7 +80,7 @@ namespace AppDating.API.Controllers
         {
             var username = User.GetUsername();
 
-            var message = await messageRepository.GetMessage(id);
+            var message = await unitOfWork.MessageRepository.GetMessage(id);
 
             if (message == null)
                 return BadRequest("Cannot find message");
@@ -92,9 +91,9 @@ namespace AppDating.API.Controllers
             if (message.RecipientUsername == username) message.RecipientDeleted = true;
 
             if (message is { SenderDeleted: true, RecipientDeleted: true })
-                messageRepository.DeleteMessage(message);
+                unitOfWork.MessageRepository.DeleteMessage(message);
 
-            if (await messageRepository.SaveAllAsync()) return Ok();
+            if (await unitOfWork.Complete()) return Ok();
 
             return BadRequest("Problem deleting the message");
         }

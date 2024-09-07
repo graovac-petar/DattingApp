@@ -86,7 +86,6 @@ namespace AppDating.API.Data
             if (unreadMessages.Any())
             {
                 unreadMessages.ForEach(m => m.DateRead = DateTime.UtcNow);
-                await context.SaveChangesAsync();
             }
 
             return messages;
@@ -95,11 +94,6 @@ namespace AppDating.API.Data
         public void RemoveConnection(Connection connection)
         {
             context.Connections.Remove(connection);
-        }
-
-        public async Task<bool> SaveAllAsync()
-        {
-            return await context.SaveChangesAsync() > 0;
         }
     }
 }

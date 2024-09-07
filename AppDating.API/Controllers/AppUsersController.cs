@@ -15,13 +15,13 @@ namespace DattingApp.API.Controllers
     [Authorize]
     public class AppUsersController : ControllerBase
     {
-        private readonly IUserRepository userRepository;
+        private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
         private readonly IPhotoService photoService;
 
-        public AppUsersController(IUserRepository userRepository, IMapper mapper, IPhotoService photoService)
+        public AppUsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService photoService)
         {
-            this.userRepository = userRepository;
+            this.unitOfWork = unitOfWork;
             this.mapper = mapper;
             this.photoService = photoService;
         }
@@ -30,7 +30,7 @@ namespace DattingApp.API.Controllers
         public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllAppUsers([FromQuery] UserParams userParams)
         {
             userParams.CurrentUsername = User.GetUsername();
-            var users = await userRepository.GetMembersAsync(userParams);
+            var users = await unitOfWork.UserRepository.GetMembersAsync(userParams);
 
             Response.AddPaginationHeader(users);
 
@@ -41,7 +41,7 @@ namespace DattingApp.API.Controllers
         [HttpGet("{username}")]
         public async Task<ActionResult<MemberDTO>> GetAppUser(string username)
         {
-            var user = await userRepository.GetMemberAsync(username);
+            var user = await unitOfWork.UserRepository.GetMemberAsync(username);
 
             if (user == null)
                 return NotFound();
@@ -52,11 +52,11 @@ namespace DattingApp.API.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateUser(MemberUpdateDTO memberUpdateDTO)
         {
-            var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
             if (user == null) return BadRequest("Could not find user");
 
             mapper.Map(memberUpdateDTO, user);
-            if (await userRepository.SaveAllAsync()) return NoContent();
+            if (await unitOfWork.Complete()) return NoContent();
 
             return BadRequest("Failed to update user");
         }
@@ -64,7 +64,7 @@ namespace DattingApp.API.Controllers
         [HttpPost("add-photo")]
         public async Task<ActionResult<PhotoDTO>> AddPhoto(IFormFile file)
         {
-            var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
             if (user == null) return BadRequest("Cannot update user");
 
             var result = await photoService.AddPhotoAsync(file);
@@ -83,7 +83,7 @@ namespace DattingApp.API.Controllers
 
             user.Photos.Add(photo);
 
-            if (await userRepository.SaveAllAsync())
+            if (await unitOfWork.Complete())
             {
                 return CreatedAtAction(nameof(GetAppUser), new { username = user.UserName }, mapper.Map<PhotoDTO>(photo));
             }
@@ -95,7 +95,7 @@ namespace DattingApp.API.Controllers
         [HttpPut("set-main-photo/{photoId:int}")]
         public async Task<ActionResult> SetMainPhoto(int photoId)
         {
-            var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
             if (user == null) return BadRequest("Cannot update user");
 
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
@@ -107,7 +107,7 @@ namespace DattingApp.API.Controllers
 
             photo.IsMain = true;
 
-            if (await userRepository.SaveAllAsync()) return NoContent();
+            if (await unitOfWork.Complete()) return NoContent();
 
             return BadRequest("Failed to set main photo");
         }
@@ -115,7 +115,7 @@ namespace DattingApp.API.Controllers
         [HttpDelete("delete-photo/{photoId:int}")]
         public async Task<ActionResult> DeletePhoto(int photoId)
         {
-            var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
+            var user = await unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
             if (user == null) return BadRequest("User not found");
 
             var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
@@ -132,7 +132,7 @@ namespace DattingApp.API.Controllers
 
             user.Photos.Remove(photo);
 
-            if (await userRepository.SaveAllAsync()) return Ok();
+            if (await unitOfWork.Complete()) return Ok();
 
             return BadRequest("Failed to delete photo");
         }
