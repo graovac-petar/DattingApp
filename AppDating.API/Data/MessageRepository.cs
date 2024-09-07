@@ -39,6 +39,11 @@ namespace AppDating.API.Data
             return await context.Connections.FindAsync(connectionId);
         }
 
+        public async Task<Group?> GetGroupForConnection(string connectionId)
+        {
+            return await context.Groups.Include(x => x.Connections).Where(x => x.Connections.Any(c => c.ConnectionId == connectionId)).FirstOrDefaultAsync();
+        }
+
         public async Task<Message?> GetMessage(int id)
         {
             return await context.Messages.FindAsync(id);
@@ -68,16 +73,15 @@ namespace AppDating.API.Data
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
         {
             var messages = await context.Messages
-                .Include(x => x.Sender).ThenInclude(x => x.Photos)
-                .Include(x => x.Recipient).ThenInclude(x => x.Photos)
-                .Where(m => m.Recipient.UserName == currentUsername && m.RecipientDeleted == false
-                    && m.Sender.UserName == recipientUsername
-                    || m.Recipient.UserName == recipientUsername && m.Sender.UserName == currentUsername
+                .Where(m => m.RecipientUsername == currentUsername && m.RecipientDeleted == false
+                    && m.SenderUsername == recipientUsername
+                    || m.RecipientUsername == recipientUsername && m.SenderUsername == currentUsername
                     && m.SenderDeleted == false)
                 .OrderBy(m => m.MessageSent)
+                .ProjectTo<MessageDTO>(mapper.ConfigurationProvider)
                 .ToListAsync();
 
-            var unreadMessages = messages.Where(m => m.DateRead == null && m.Recipient.UserName == currentUsername).ToList();
+            var unreadMessages = messages.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
 
             if (unreadMessages.Any())
             {
@@ -85,7 +89,7 @@ namespace AppDating.API.Data
                 await context.SaveChangesAsync();
             }
 
-            return mapper.Map<IEnumerable<MessageDTO>>(messages);
+            return messages;
         }
 
         public void RemoveConnection(Connection connection)
