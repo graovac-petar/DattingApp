@@ -72,23 +72,22 @@ namespace AppDating.API.Data
 
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
         {
-            var messages = await context.Messages
+            var query = context.Messages
                 .Where(m => m.RecipientUsername == currentUsername && m.RecipientDeleted == false
                     && m.SenderUsername == recipientUsername
                     || m.RecipientUsername == recipientUsername && m.SenderUsername == currentUsername
                     && m.SenderDeleted == false)
                 .OrderBy(m => m.MessageSent)
-                .ProjectTo<MessageDTO>(mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsQueryable();
 
-            var unreadMessages = messages.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
+            var unreadMessages = query.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
 
             if (unreadMessages.Any())
             {
                 unreadMessages.ForEach(m => m.DateRead = DateTime.UtcNow);
             }
 
-            return messages;
+            return await query.ProjectTo<MessageDTO>(mapper.ConfigurationProvider).ToListAsync();
         }
 
         public void RemoveConnection(Connection connection)
