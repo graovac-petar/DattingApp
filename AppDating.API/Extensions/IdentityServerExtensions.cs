@@ -44,7 +44,6 @@ namespace AppDating.API.Extensions
                             return Task.CompletedTask;
                         }
                     };
-
                 });
 
             services.AddAuthorizationBuilder()

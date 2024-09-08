@@ -13,6 +13,7 @@ namespace AppDating.API.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Connection> Connections { get; set; }
+        public DbSet<Photo> Photos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +55,8 @@ namespace AppDating.API.Data
                 .HasOne(x => x.Recipient)
                 .WithMany(x => x.MessagesReceived)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
         }
     }
 }

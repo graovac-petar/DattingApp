@@ -19,13 +19,12 @@ import { HubConnection, HubConnectionState } from '@microsoft/signalr';
   styleUrl: './member-detail.component.css'
 })
 export class MemberDetailComponent implements OnInit, OnDestroy {
-  
   @ViewChild('memberTabs', {static:true}) memberTabs?: TabsetComponent;
   presenceService = inject(PresenceService);
-  private accountService = inject(AccountService);
   private messageService = inject(MessageService);
+  private accountService = inject(AccountService);
   private route =inject(ActivatedRoute);
-  private router = inject(Router);
+  private router = inject(Router)
   member: Member = {} as Member;
   images:GalleryItem[] = [];
   activeTab?:TabDirective;
@@ -61,12 +60,11 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  onRouteParamsChange() {
+  onRouteParamsChange(){
     const user = this.accountService.currentUser();
     if(!user) return;
-    if(this.messageService.hubConnection?.state === HubConnectionState.Connected 
-      && this.activeTab?.heading === 'Messages') {
-      this.messageService.hubConnection.stop().then(() => {
+    if(this.messageService.hubConnection?.state === HubConnectionState.Connected && this.activeTab?.heading === 'Messages'){
+      this.messageService.hubConnection.stop().then(()=>{
         this.messageService.createHubConnection(user, this.member.userName);
       })
     }
@@ -74,17 +72,17 @@ export class MemberDetailComponent implements OnInit, OnDestroy {
 
   onTabActivated(data: TabDirective){
     this.activeTab = data;
-    this.router.navigate([], {
+    this.router.navigate([],{
       relativeTo: this.route,
       queryParams: {tab: this.activeTab.heading},
       queryParamsHandling: 'merge'
     })
-    if(this.activeTab.heading === 'Messages' && this.member){
-      const user =  this.accountService.currentUser();
+    if(this.activeTab.heading === 'Messages' && this.member) {
+      const user = this.accountService.currentUser();
       if(!user) return;
       this.messageService.createHubConnection(user, this.member.userName);
     }
-    else{
+    else {
       this.messageService.stopHubConnection();
     }
   }

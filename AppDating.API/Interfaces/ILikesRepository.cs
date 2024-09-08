@@ -11,6 +11,5 @@ namespace AppDating.API.Interfaces
         Task<IEnumerable<int>> GetCurrentUserLikeIds(int currentUserId);
         void DeleteUserLike(UserLike like);
         void AddLike(UserLike like);
-        Task<bool> SaveChanges();
     }
 }

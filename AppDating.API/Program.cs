@@ -19,9 +19,9 @@ var app = builder.Build();
 
 app.UseCors(policy =>
     policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
-          .AllowCredentials()
-          .AllowAnyHeader()
-          .AllowAnyMethod()
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
 );
 
 app.UseMiddleware<ExceptionMiddleware>();
@@ -29,12 +29,14 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<PresenceHub>("hubs/presence");
 app.MapHub<MessageHub>("hubs/message");
+app.MapFallbackToController("Index", "Fallback");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

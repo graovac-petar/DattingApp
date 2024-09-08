@@ -39,6 +39,11 @@ namespace AppDating.API.Data
             return await context.Connections.FindAsync(connectionId);
         }
 
+        public async Task<Group?> GetGroupForConnection(string connectionId)
+        {
+            return await context.Groups.Include(x => x.Connections).Where(x => x.Connections.Any(c => c.ConnectionId == connectionId)).FirstOrDefaultAsync();
+        }
+
         public async Task<Message?> GetMessage(int id)
         {
             return await context.Messages.FindAsync(id);
@@ -67,35 +72,27 @@ namespace AppDating.API.Data
 
         public async Task<IEnumerable<MessageDTO>> GetMessageThread(string currentUsername, string recipientUsername)
         {
-            var messages = await context.Messages
-                .Include(u => u.Sender).ThenInclude(p => p.Photos)
-                .Include(u => u.Recipient).ThenInclude(p => p.Photos)
+            var query = context.Messages
                 .Where(m => m.RecipientUsername == currentUsername && m.RecipientDeleted == false
                     && m.SenderUsername == recipientUsername
-                    || m.SenderUsername == currentUsername && m.RecipientUsername == recipientUsername
+                    || m.RecipientUsername == recipientUsername && m.SenderUsername == currentUsername
                     && m.SenderDeleted == false)
                 .OrderBy(m => m.MessageSent)
-                .ToListAsync();
+                .AsQueryable();
 
-            var unreadMessages = messages.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
+            var unreadMessages = query.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
 
             if (unreadMessages.Any())
             {
                 unreadMessages.ForEach(m => m.DateRead = DateTime.UtcNow);
-                await context.SaveChangesAsync();
             }
 
-            return mapper.Map<IEnumerable<MessageDTO>>(messages);
+            return await query.ProjectTo<MessageDTO>(mapper.ConfigurationProvider).ToListAsync();
         }
 
         public void RemoveConnection(Connection connection)
         {
             context.Connections.Remove(connection);
-        }
-
-        public async Task<bool> SaveAllAsync()
-        {
-            return await context.SaveChangesAsync() > 0;
         }
     }
 }

@@ -28,6 +28,16 @@ namespace AppDating.API.Data
 
         }
 
+        public async Task<MemberDTO> GetMemberAsync(string username, bool isCurrentUser)
+        {
+            var query = context.Users
+                .Where(x => x.UserName == username)
+                .ProjectTo<MemberDTO>(mapper.ConfigurationProvider)
+                .AsQueryable();
+            if (isCurrentUser) query = query.IgnoreQueryFilters();
+            return await query.FirstOrDefaultAsync();
+        }
+
         public async Task<PagedList<MemberDTO?>> GetMembersAsync(UserParams userParams)
         {
             var query = context.AppUsers.AsQueryable();
@@ -58,6 +68,15 @@ namespace AppDating.API.Data
             return await context.AppUsers.FindAsync(id);
         }
 
+        public async Task<AppUser?> GetUserByPhotoId(int photoId)
+        {
+            return await context.Users
+            .Include(p => p.Photos)
+            .IgnoreQueryFilters()
+            .Where(p => p.Photos.Any(p => p.Id == photoId))
+            .FirstOrDefaultAsync();
+        }
+
         public async Task<AppUser?> GetUserByUsernameAsync(string username)
         {
             return await context.AppUsers
@@ -68,11 +87,6 @@ namespace AppDating.API.Data
         public async Task<IEnumerable<AppUser>> GetUsersAsync()
         {
             return await context.AppUsers.Include(x => x.Photos).ToListAsync();
-        }
-
-        public async Task<bool> SaveAllAsync()
-        {
-            return await context.SaveChangesAsync() > 0;
         }
     }
 }

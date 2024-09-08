@@ -7,6 +7,5 @@ namespace AppDating.API.Model.Domain
         [Key]
         public required string Name { get; set; }
         public ICollection<Connection> Connections { get; set; } = [];
-
     }
 }
