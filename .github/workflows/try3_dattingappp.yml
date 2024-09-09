@@ -26,8 +26,7 @@ jobs:
 
       - name: Install deps and build angular app
         run: |
-          cd DattingAppClient
-          cd client
+          cd DattingAppClient/Client
           npm install
           ng build
 
