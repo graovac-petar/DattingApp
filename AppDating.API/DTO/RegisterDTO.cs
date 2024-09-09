@@ -19,7 +19,7 @@ namespace AppDating.API.DTO
         [Required]
         public string? Country { get; set; }
         [Required]
-        [StringLength(8, MinimumLength = 4)]
+        [StringLength(15, MinimumLength = 8)]
         public string Password { get; set; } = string.Empty;
 
 
