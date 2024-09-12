@@ -9,7 +9,6 @@ You can check out the live version of the DattingApp https://dattingappp-avdxeng
 - **Real-time Chat**: Integrated chat functionality that allows users to communicate instantly with matches.
 - **Search & Matching**: Advanced search functionality with a robust matching algorithm to find suitable matches based on user preferences.
 - **Admin Dashboard**: Provides an administrative interface for managing user data and activity.
-- **Responsive Design**: Optimized for mobile and desktop views.
 
 ## Tech Stack
 
@@ -66,7 +65,7 @@ To run this application, you will need the following installed:
     - Navigate to the `ClientApp` directory and install the dependencies:
 
       ```bash
-      cd ClientApp
+      cd ClientApp/Client
       npm install
       ```
 
