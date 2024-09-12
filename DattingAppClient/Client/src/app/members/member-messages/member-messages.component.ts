@@ -35,14 +35,4 @@ export class MemberMessagesComponent  implements AfterViewChecked {
       this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }
   }
-
-  ngAfterViewChecked(): void {
-    this.scrollToBottom();
-  }
-
-  private scrollToBottom(): void {
-    if(this.scrollContainer){
-      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    }
-  }
 }
