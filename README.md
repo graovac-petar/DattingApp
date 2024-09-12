@@ -89,11 +89,7 @@ The API follows RESTful conventions and includes endpoints for:
 
 - The DattingApp is hosted on Azure and utilizes Azure SQL Server for the database.
 
-Live Application: DattingApp
-Database: Azure SQL Server
-Azure services provide reliable scalability, ensuring the app performs efficiently under various workloads.
-
-Continuous Integration
+## Continuous Integration
 The DattingApp project utilizes GitHub Actions for Continuous Integration (CI). Every push or pull request triggers the CI pipeline to:
 
 Run unit tests
