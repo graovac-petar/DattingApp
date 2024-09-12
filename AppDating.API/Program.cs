@@ -26,7 +26,6 @@ app.UseCors(policy =>
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
