@@ -2,8 +2,6 @@
 
 You can check out the live version of the DattingApp https://dattingappp-avdxeng3fygdh2ah.italynorth-01.azurewebsites.net/
 
-**DattingApp** is a modern, feature-rich dating application built using **ASP.NET Core** for the backend and **Angular** for the frontend. 
-
 ## Features
 
 - **User Authentication**: Secure registration and login using JWT (JSON Web Token) authentication.
