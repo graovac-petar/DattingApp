@@ -30,4 +30,10 @@
   >
     Passwords do not match
   </div>
+  <div
+    *ngIf="control.hasError('specialChar')"
+    class="invalid-feedback text-start"
+  >
+    Password must contain at least one special character.
+  </div>
 </div>

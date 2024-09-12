@@ -1,5 +1,5 @@
 import { Component, Inject, inject, OnInit, output } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
 import { JsonPipe, NgIf } from '@angular/common';
 import { TextInputComponent } from '../_forms/text-input/text-input.component';
@@ -37,7 +37,7 @@ export class RegisterComponent implements OnInit {
       dateOfBirth: ['', Validators.required],
       city: ['', Validators.required],
       country: ['', Validators.required],
-      password: ['',[Validators.required,Validators.minLength(8),Validators.maxLength(15)]],
+      password: ['',[Validators.required,Validators.minLength(8),Validators.maxLength(15),this.specialCharValidator]],
       confirmPassword: ['',[Validators.required,this.matchValues('password')]]
     })
     this.registerForm.controls['password'].valueChanges.subscribe(()=>{
@@ -45,6 +45,15 @@ export class RegisterComponent implements OnInit {
     })
   }
 
+  specialCharValidator(control: AbstractControl): ValidationErrors | null {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;  // Define special characters
+  
+    if (control.value && !specialCharPattern.test(control.value)) {
+      return { specialChar: 'Password must contain at least one special character' };
+    }
+  
+    return null;
+  }
   matchValues (matchTo: string): ValidatorFn {
     return (control:AbstractControl) => {
       return control.value === control.parent?.get(matchTo)?.value ? null : {isMatching: true}
