@@ -86,6 +86,7 @@ The API follows RESTful conventions and includes endpoints for:
 - **Profiles**: `GET /api/users`, `GET /api/users/{id}`, `PUT /api/users/{id}`
 - **Messages**: `GET /api/messages`, `POST /api/messages`
 - **Admin**: `GET /api/admin/users`, `DELETE /api/admin/users/{id}`
+- and more...
 
 - The DattingApp is hosted on Azure and utilizes Azure SQL Server for the database.
 
